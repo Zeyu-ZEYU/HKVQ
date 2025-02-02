@@ -1,0 +1,4 @@
+tensorflow-gpu==1.15.2
+pandas
+tabulate
+pyrouge

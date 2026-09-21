@@ -1,97 +1,44 @@
 [build-system]
-# Should be mirrored in requirements-build.txt
-requires = [
-    "cmake>=3.26",
-    "ninja",
-    "packaging",
-    "setuptools>=61",
-    "setuptools-scm>=8.0",
-    "torch == 2.4.0",
-    "wheel",
-    "jinja2",
-]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
-[tool.ruff]
-# Allow lines to be as long as 80.
-line-length = 80
-exclude = [
-    # External file, leaving license intact
-    "examples/fp8/quantizer/quantize.py"
+[project]
+name = "hack-kv"
+version = "1.0.0"
+description = "HACK: homomorphic acceleration via compression of the KV cache for disaggregated LLM inference"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+dependencies = [
+    "torch==2.13.0",
+    "triton==3.7.1",
+    "transformers==5.17.0",
+    "numpy==2.3.5",
 ]
 
-[tool.ruff.lint.per-file-ignores]
-"vllm/version.py" = ["F401"]
-"vllm/_version.py" = ["ALL"]
-
-[tool.ruff.lint]
-select = [
-    # pycodestyle
-    "E",
-    # Pyflakes
-    "F",
-    # pyupgrade
-    # "UP",
-    # flake8-bugbear
-    "B",
-    # flake8-simplify
-    "SIM",
-    # isort
-    # "I",
-    "G",
+[project.optional-dependencies]
+vllm = [
+    "vllm==0.29.0",
+    "aiohttp==3.14.3",
+    "fastapi==0.136.3",
+    "uvicorn==0.53.0",
+    "httpx==0.28.1",
 ]
-ignore = [
-    # star imports
-    "F405", "F403",
-    # lambda expression assignment
-    "E731",
-    # Loop control variable not used within loop body
-    "B007",
-    # f-string format
-    "UP032",
+benchmarks = [
+    "datasets==5.0.1",
+    "pandas==3.0.6",
+    "matplotlib==3.11.2",
+    "rouge-score==0.1.2",
 ]
+test = ["pytest==9.1.1"]
 
-[tool.mypy]
-python_version = "3.8"
+[project.entry-points."vllm.general_plugins"]
+hack_attention = "hack.vllm_plugin:register"
 
-ignore_missing_imports = true
-check_untyped_defs = true
-follow_imports = "silent"
-
-# After fixing type errors resulting from follow_imports: "skip" -> "silent",
-# move the directory here and remove it from format.sh and mypy.yaml
-files = [
-    "vllm/*.py",
-    "vllm/adapter_commons",
-    "vllm/assets",
-    "vllm/entrypoints",
-    "vllm/core",
-    "vllm/inputs",
-    "vllm/logging",
-    "vllm/multimodal",
-    "vllm/platforms",
-    "vllm/transformers_utils",
-    "vllm/triton_utils",
-    "vllm/usage",
-]
-# TODO(woosuk): Include the code from Megatron and HuggingFace.
-exclude = [
-    "vllm/model_executor/parallel_utils/|vllm/model_executor/models/",
-    # Ignore triton kernels in ops.
-    'vllm/attention/ops/.*\.py$'
-]
-
-[tool.codespell]
-ignore-words-list = "dout, te, indicies, subtile"
-skip = "./tests/models/fixtures,./tests/prompts,./benchmarks/sonnet.txt,./tests/lora/data,./build"
-
-[tool.isort]
-use_parentheses = true
-skip_gitignore = true
+[tool.setuptools.packages.find]
+include = ["hack*"]
 
 [tool.pytest.ini_options]
-markers = [
-    "skip_global_cleanup",
-    "core_model: run this model test in each PR instead of just daily",
-    "distributed_2_gpus: run this test only in distributed tests for 2 GPUs",
-]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
